@@ -1,6 +1,16 @@
 import { mat4 } from "gl-matrix"
 import { useEffect, useRef } from "react"
 import "./App.css"
+import {
+  glCreateBuffer,
+  glCreateProgram,
+  glCreateShader,
+} from "./helpers/gl-wrapper"
+
+type MyBuffers = {
+  position: WebGLBuffer
+  color: WebGLBuffer
+}
 
 function App() {
   const canvas = useRef<HTMLCanvasElement>(null)
@@ -14,22 +24,34 @@ function App() {
       )
     }
 
-    gl.clearColor(0.2, 0.2, 0.7, 1)
+    const defaultClearColor: [number, number, number, number] = [
+      0.7,
+      0.7,
+      1.0,
+      1.0,
+    ]
+    gl.clearColor(...defaultClearColor)
     gl.clear(gl.COLOR_BUFFER_BIT)
 
     const vsSource = `
     attribute vec4 aVertexPosition;
+    attribute vec4 aVertexColor;
 
     uniform mat4 uModelViewMatrix;
     uniform mat4 uProjectionMatrix;
 
+    varying lowp vec4 vColor;
+
     void main() {
       gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
+      vColor = aVertexColor;
     }
   `
     const fsSource = `
+    varying lowp vec4 vColor;
+
     void main() {
-      gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+      gl_FragColor = vColor;
     }
   `
 
@@ -38,10 +60,7 @@ function App() {
       type: number,
       source: string
     ) => {
-      const shader = gl.createShader(type)
-      if (!shader) {
-        throw new Error("Failed to create shader.")
-      }
+      const shader = glCreateShader(gl, type)
 
       gl.shaderSource(shader, source)
       gl.compileShader(shader)
@@ -70,10 +89,7 @@ function App() {
       const vertexShader = loadShader(gl, gl.VERTEX_SHADER, vsSource)
       const fragmentShader = loadShader(gl, gl.FRAGMENT_SHADER, fsSource)
 
-      const shaderProgram = gl.createProgram()
-      if (!shaderProgram) {
-        throw new Error("Failed to create program.")
-      }
+      const shaderProgram = glCreateProgram(gl)
 
       gl.attachShader(shaderProgram, vertexShader)
       gl.attachShader(shaderProgram, fragmentShader)
@@ -96,6 +112,7 @@ function App() {
       program: shaderProgram,
       attribLocations: {
         vertexPosition: gl.getAttribLocation(shaderProgram, "aVertexPosition"),
+        vertexColor: gl.getAttribLocation(shaderProgram, "aVertexColor"),
       },
       uniformLocations: {
         projectionMatrix: gl.getUniformLocation(
@@ -109,11 +126,8 @@ function App() {
       },
     }
 
-    const initBuffers = (gl: WebGL2RenderingContext) => {
-      const positionBuffer = gl.createBuffer()
-      if (!positionBuffer) {
-        throw new Error("Failed to create buffer")
-      }
+    const initBuffers = (gl: WebGL2RenderingContext): MyBuffers => {
+      const positionBuffer = glCreateBuffer(gl)
 
       gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
 
@@ -125,15 +139,38 @@ function App() {
         gl.STATIC_DRAW
       )
 
-      return { position: positionBuffer }
+      const colors = [
+        // Red
+        1.0,
+        0.0,
+        0.0,
+        1.0,
+        // Green
+        0.0,
+        1.0,
+        0.0,
+        1.0,
+        // Blue
+        0.0,
+        0.0,
+        1.0,
+        1.0,
+      ]
+
+      const colorBuffer = glCreateBuffer(gl)
+
+      gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer)
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW)
+
+      return { position: positionBuffer, color: colorBuffer }
     }
 
     const drawScene = (
       gl: WebGL2RenderingContext,
       info: typeof programInfo,
-      buffers: { position: WebGLBuffer }
+      buffers: MyBuffers
     ) => {
-      gl.clearColor(0.2, 0.2, 0.7, 1)
+      gl.clearColor(...defaultClearColor)
       gl.clearDepth(1.0)
       gl.enable(gl.DEPTH_TEST)
       gl.depthFunc(gl.LEQUAL)
@@ -153,22 +190,43 @@ function App() {
       const modelViewMatrix = mat4.create()
       mat4.translate(modelViewMatrix, modelViewMatrix, [0.0, 0.0, -6.0])
 
-      const numComponents = 2
-      const type = gl.FLOAT
-      const normalize = false
-      const stride = 0
-      const offset = 0
+      {
+        const numComponents = 2
+        const type = gl.FLOAT
+        const normalize = false
+        const stride = 0
+        const offset = 0
 
-      gl.bindBuffer(gl.ARRAY_BUFFER, buffers.position)
-      gl.vertexAttribPointer(
-        info.attribLocations.vertexPosition,
-        numComponents,
-        type,
-        normalize,
-        stride,
-        offset
-      )
-      gl.enableVertexAttribArray(info.attribLocations.vertexPosition)
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffers.position)
+        gl.vertexAttribPointer(
+          info.attribLocations.vertexPosition,
+          numComponents,
+          type,
+          normalize,
+          stride,
+          offset
+        )
+        gl.enableVertexAttribArray(info.attribLocations.vertexPosition)
+      }
+
+      {
+        const numComponents = 4
+        const type = gl.FLOAT
+        const normalize = false
+        const stride = 0
+        const offset = 0
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffers.color)
+        gl.vertexAttribPointer(
+          info.attribLocations.vertexColor,
+          numComponents,
+          type,
+          normalize,
+          stride,
+          offset
+        )
+        gl.enableVertexAttribArray(info.attribLocations.vertexColor)
+      }
 
       gl.useProgram(info.program)
 
@@ -183,6 +241,7 @@ function App() {
         modelViewMatrix
       )
 
+      const offset = 0
       const vertexCount = 3
       gl.drawArrays(gl.TRIANGLE_STRIP, offset, vertexCount)
     }
