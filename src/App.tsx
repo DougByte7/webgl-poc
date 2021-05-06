@@ -1,10 +1,12 @@
-import "./App.css"
-import WebGLCanvasContainer from "@/components/webgl-canvas/webgl-canvas-container"
-
+import "./App.scss"
+import { WebGLCanvasComponent } from "./components/webgl-canvas"
+import { ErrorBoundaryComponent } from "./components/error-boundary"
 function App() {
   return (
     <div className="App">
-      <WebGLCanvasContainer />
+      <ErrorBoundaryComponent>
+        <WebGLCanvasComponent />
+      </ErrorBoundaryComponent>
     </div>
   )
 }

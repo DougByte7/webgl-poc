@@ -9,6 +9,7 @@ import { rgbTriangle } from "@/scene-objects/rgb-triangle"
 
 const WebGLCanvasContainer: FunctionComponent = () => {
   const canvas = useRef<HTMLCanvasElement>(null)
+
   useEffect(() => {
     if (!canvas.current) return
 

@@ -1,7 +1,7 @@
 export const rgbTriangle = [
   // v0
   0.0,
-  1.25,
+  1.1,
   // Red
   1.0,
   0.0,
