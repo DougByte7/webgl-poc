@@ -5,7 +5,11 @@ import {
   glCreateProgram,
   loadShader,
 } from "@/helpers/gl-wrapper"
-import { rgbTriangle } from "@/scene-objects/rgb-triangle"
+import {
+  cubeFaceColors,
+  cubeIndices,
+  cubePositions,
+} from "@/scene-objects/cube"
 
 const WebGLCanvasContainer: FunctionComponent = () => {
   const canvas = useRef<HTMLCanvasElement>(null)
@@ -96,7 +100,7 @@ const WebGLCanvasContainer: FunctionComponent = () => {
       },
     }
 
-    let triangleRotation = 0.0
+    let cubeRotation = 0.0
     const drawScene = (
       gl: WebGL2RenderingContext,
       info: typeof programInfo,
@@ -121,39 +125,59 @@ const WebGLCanvasContainer: FunctionComponent = () => {
 
       const modelViewMatrix = mat4.create()
       mat4.translate(modelViewMatrix, modelViewMatrix, [0.0, 0.0, -6.0])
-      mat4.rotate(modelViewMatrix, modelViewMatrix, triangleRotation, [0, 0, 1])
+      mat4.rotate(modelViewMatrix, modelViewMatrix, cubeRotation, [0, 0, 1])
+      mat4.rotate(modelViewMatrix, modelViewMatrix, cubeRotation * .2, [0, 1, 0])
+      mat4.rotate(modelViewMatrix, modelViewMatrix, cubeRotation * .5, [1, 0, 0])
 
-      const sceneObjectBuffer = glCreateBuffer(gl)
-      gl.bindBuffer(gl.ARRAY_BUFFER, sceneObjectBuffer)
+      const sceneObjectPositionBuffer = glCreateBuffer(gl)
+      gl.bindBuffer(gl.ARRAY_BUFFER, sceneObjectPositionBuffer)
 
-      const sceneObjectBufferData = new Float32Array(rgbTriangle)
-      gl.bufferData(gl.ARRAY_BUFFER, sceneObjectBufferData, gl.STATIC_DRAW)
+      const sceneObjectPositionBufferData = new Float32Array(cubePositions)
+      gl.bufferData(
+        gl.ARRAY_BUFFER,
+        sceneObjectPositionBufferData,
+        gl.STATIC_DRAW
+      )
 
-      {
-        const bpe = sceneObjectBufferData.BYTES_PER_ELEMENT
-        const stride = 6 * bpe
-        // Bind Vertex position
-        gl.bindBuffer(gl.ARRAY_BUFFER, sceneObjectBuffer)
-        gl.vertexAttribPointer(
-          info.attribLocations.vertexPosition,
-          2,
-          gl.FLOAT,
-          false,
-          stride,
-          0
+      gl.bindBuffer(gl.ARRAY_BUFFER, sceneObjectPositionBuffer)
+      gl.vertexAttribPointer(
+        info.attribLocations.vertexPosition,
+        3,
+        gl.FLOAT,
+        false,
+        0,
+        0
+      )
+      gl.enableVertexAttribArray(info.attribLocations.vertexPosition)
+
+      let colors = cubeFaceColors
+        .map<number[][]>(
+          // Repeat each color four times for the four vertices of the face
+          (color) => Array.from({ length: 4 }, (_) => color)
         )
-        gl.enableVertexAttribArray(info.attribLocations.vertexPosition)
-        // Bind vertex colors
-        gl.vertexAttribPointer(
-          info.attribLocations.vertexColor,
-          4,
-          gl.FLOAT,
-          false,
-          stride,
-          2 * bpe
-        )
-        gl.enableVertexAttribArray(info.attribLocations.vertexColor)
-      }
+        .flat(2)
+
+      const sceneObjectColorBuffer = glCreateBuffer(gl)
+      gl.bindBuffer(gl.ARRAY_BUFFER, sceneObjectColorBuffer)
+
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW)
+      gl.vertexAttribPointer(
+        info.attribLocations.vertexColor,
+        4,
+        gl.FLOAT,
+        false,
+        0,
+        0
+      )
+      gl.enableVertexAttribArray(info.attribLocations.vertexColor)
+
+      const sceneObjectIndicesBuffer = glCreateBuffer(gl)
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, sceneObjectIndicesBuffer)
+      gl.bufferData(
+        gl.ELEMENT_ARRAY_BUFFER,
+        new Uint16Array(cubeIndices),
+        gl.STATIC_DRAW
+      )
 
       gl.useProgram(info.program)
 
@@ -169,9 +193,9 @@ const WebGLCanvasContainer: FunctionComponent = () => {
       )
 
       const offset = 0
-      const vertexCount = 3
-      gl.drawArrays(gl.TRIANGLE_STRIP, offset, vertexCount)
-      triangleRotation -= deltaTime
+      const vertexCount = 36
+      gl.drawElements(gl.TRIANGLES, vertexCount, gl.UNSIGNED_SHORT, offset)
+      cubeRotation -= deltaTime
     }
 
     let then = 0
