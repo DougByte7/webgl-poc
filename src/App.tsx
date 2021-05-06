@@ -8,8 +8,8 @@ import {
 } from "./helpers/gl-wrapper"
 
 type MyBuffers = {
-  position: WebGLBuffer
-  color: WebGLBuffer
+  positionAndColors: WebGLBuffer
+  positionAndColorsBytesPerElement: number
 }
 
 function App() {
@@ -25,9 +25,9 @@ function App() {
     }
 
     const defaultClearColor: [number, number, number, number] = [
-      0.7,
-      0.7,
-      1.0,
+      0.8,
+      0.8,
+      0.8,
       1.0,
     ]
     gl.clearColor(...defaultClearColor)
@@ -127,29 +127,29 @@ function App() {
     }
 
     const initBuffers = (gl: WebGL2RenderingContext): MyBuffers => {
-      const positionBuffer = glCreateBuffer(gl)
+      const positionAndColorsBuffer = glCreateBuffer(gl)
+      gl.bindBuffer(gl.ARRAY_BUFFER, positionAndColorsBuffer)
 
-      gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer)
-
-      const positions = [0.0, 1.0, 1.0, -1.0, -1.0, -1.0]
-
-      gl.bufferData(
-        gl.ARRAY_BUFFER,
-        new Float32Array(positions),
-        gl.STATIC_DRAW
-      )
-
-      const colors = [
+      const positionsAndColors = [
+        // v0
+        0.0,
+        1.0,
         // Red
         1.0,
         0.0,
         0.0,
         1.0,
+        // v1
+        1.0,
+        -1.0,
         // Green
         0.0,
         1.0,
         0.0,
         1.0,
+        // v2
+        -1.0,
+        -1.0,
         // Blue
         0.0,
         0.0,
@@ -157,12 +157,16 @@ function App() {
         1.0,
       ]
 
-      const colorBuffer = glCreateBuffer(gl)
+      const data = new Float32Array(positionsAndColors)
 
-      gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer)
-      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW)
+      gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
 
-      return { position: positionBuffer, color: colorBuffer }
+      const positionAndColorsBytesPerElement = data.BYTES_PER_ELEMENT
+
+      return {
+        positionAndColors: positionAndColorsBuffer,
+        positionAndColorsBytesPerElement,
+      }
     }
 
     const drawScene = (
@@ -191,39 +195,26 @@ function App() {
       mat4.translate(modelViewMatrix, modelViewMatrix, [0.0, 0.0, -6.0])
 
       {
-        const numComponents = 2
-        const type = gl.FLOAT
-        const normalize = false
-        const stride = 0
-        const offset = 0
+        const stride = 6 * buffers.positionAndColorsBytesPerElement
 
-        gl.bindBuffer(gl.ARRAY_BUFFER, buffers.position)
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffers.positionAndColors)
         gl.vertexAttribPointer(
           info.attribLocations.vertexPosition,
-          numComponents,
-          type,
-          normalize,
+          2,
+          gl.FLOAT,
+          false,
           stride,
-          offset
+          0
         )
         gl.enableVertexAttribArray(info.attribLocations.vertexPosition)
-      }
-
-      {
-        const numComponents = 4
-        const type = gl.FLOAT
-        const normalize = false
-        const stride = 0
-        const offset = 0
-
-        gl.bindBuffer(gl.ARRAY_BUFFER, buffers.color)
+        
         gl.vertexAttribPointer(
           info.attribLocations.vertexColor,
-          numComponents,
-          type,
-          normalize,
+          4,
+          gl.FLOAT,
+          false,
           stride,
-          offset
+          2 * buffers.positionAndColorsBytesPerElement
         )
         gl.enableVertexAttribArray(info.attribLocations.vertexColor)
       }
