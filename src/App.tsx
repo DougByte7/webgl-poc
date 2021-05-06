@@ -133,7 +133,7 @@ function App() {
       const positionsAndColors = [
         // v0
         0.0,
-        1.0,
+        1.25,
         // Red
         1.0,
         0.0,
@@ -141,7 +141,7 @@ function App() {
         1.0,
         // v1
         1.0,
-        -1.0,
+        -0.55,
         // Green
         0.0,
         1.0,
@@ -149,7 +149,7 @@ function App() {
         1.0,
         // v2
         -1.0,
-        -1.0,
+        -0.55,
         // Blue
         0.0,
         0.0,
@@ -169,10 +169,12 @@ function App() {
       }
     }
 
+    let triangleRotation = 0.0
     const drawScene = (
       gl: WebGL2RenderingContext,
       info: typeof programInfo,
-      buffers: MyBuffers
+      buffers: MyBuffers,
+      deltaTime: number
     ) => {
       gl.clearColor(...defaultClearColor)
       gl.clearDepth(1.0)
@@ -193,6 +195,7 @@ function App() {
 
       const modelViewMatrix = mat4.create()
       mat4.translate(modelViewMatrix, modelViewMatrix, [0.0, 0.0, -6.0])
+      mat4.rotate(modelViewMatrix, modelViewMatrix, triangleRotation, [0, 0, 1])
 
       {
         const stride = 6 * buffers.positionAndColorsBytesPerElement
@@ -207,7 +210,7 @@ function App() {
           0
         )
         gl.enableVertexAttribArray(info.attribLocations.vertexPosition)
-        
+
         gl.vertexAttribPointer(
           info.attribLocations.vertexColor,
           4,
@@ -235,9 +238,21 @@ function App() {
       const offset = 0
       const vertexCount = 3
       gl.drawArrays(gl.TRIANGLE_STRIP, offset, vertexCount)
+      triangleRotation -= deltaTime
     }
 
-    drawScene(gl, programInfo, initBuffers(gl))
+    let then = 0
+    const render = (now: DOMHighResTimeStamp) => {
+      now *= 0.001
+      const deltaTime = now - then
+      then = now
+
+      drawScene(gl, programInfo, initBuffers(gl), deltaTime)
+
+      requestAnimationFrame(render)
+    }
+
+    requestAnimationFrame(render)
   }, [])
 
   return (
