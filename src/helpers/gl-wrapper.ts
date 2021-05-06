@@ -24,3 +24,22 @@ export function glCreateProgram(gl: WebGL2RenderingContext): WebGLProgram {
   }
   return program
 }
+
+export const loadShader = (
+  gl: WebGL2RenderingContext,
+  type: number,
+  source: string
+) => {
+  const shader = glCreateShader(gl, type)
+
+  gl.shaderSource(shader, source)
+  gl.compileShader(shader)
+
+  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+    const shaderInfoLog = gl.getShaderInfoLog(shader)
+    gl.deleteShader(shader)
+    throw new Error(`An error occurred compiling the shaders: ${shaderInfoLog}`)
+  }
+
+  return shader
+}
