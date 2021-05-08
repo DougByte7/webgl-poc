@@ -19,22 +19,4 @@
     border-left: 2px solid aliceblue;
     padding-bottom: 1rem;
   }
-
-  .error-boundary__btn-go-back {
-    cursor: pointer;
-    height: 2.5rem;
-    background: cornflowerblue;
-    border: 1px solid aliceblue;
-    border-radius: 25px;
-    padding: 0 1rem;
-    font-weight: bold;
-    color: rgb(26, 26, 29);
-    transition: color 150ms;
-
-    &:hover,
-    &:focus {
-      color: black;
-      background: darken($color: cornflowerblue, $amount: 10);
-    }
-  }
 }

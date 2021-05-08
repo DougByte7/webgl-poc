@@ -1,5 +1,6 @@
 import "./error-boundary.scss"
 import { ErrorInfo, FunctionComponent } from "react"
+import { Button } from "@/components/common/button"
 
 interface ErrorBoundaryViewProps {
   error: Error | null
@@ -18,9 +19,13 @@ const ErrorBoundaryView: FunctionComponent<ErrorBoundaryViewProps> = (
       <h1 className="error-boundary__title">Something wrong is not right!</h1>
       <h2 className="error-boundary__message">{props.error?.message}</h2>
       <p className="error-boundary__stack">{props.errorInfo?.componentStack}</p>
-      <button className="error-boundary__btn-go-back" title='Go back' onClick={handleGoBack}>
+      <Button
+        className="error-boundary__btn-go-back"
+        title="Go back"
+        onClick={handleGoBack}
+      >
         I want to be monke! 🐵
-      </button>
+      </Button>
     </section>
   )
 }
