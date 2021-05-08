@@ -11,8 +11,11 @@ import {
   cubeIndices,
   cubePositions,
   cubeTextureCoordinates,
+  cubeVertexNormals,
 } from "@/scene-objects/cube"
 import uvTextureReference from "@/textures/uv-reference.png"
+const vsBlinnPhong = require("@/shaders/blinn-phong.vert").default
+const fsBlinnPhong = require("@/shaders/blinn-phong.frag").default
 
 const WebGLCanvasContainer: FunctionComponent = () => {
   const canvas = useRef<HTMLCanvasElement>(null)
@@ -36,7 +39,7 @@ const WebGLCanvasContainer: FunctionComponent = () => {
     gl.clearColor(...defaultClearColor)
     gl.clear(gl.COLOR_BUFFER_BIT)
 
-    const vsSource = `
+    /*const vsSource = `
     attribute vec4 aVertexPosition;
     // attribute vec4 aVertexColor;
     attribute vec2 aTextureCoord;
@@ -53,6 +56,8 @@ const WebGLCanvasContainer: FunctionComponent = () => {
       vTextureCoord = aTextureCoord;
     }
   `
+
+    
     const fsSource = `
     // varying lowp vec4 vColor;
     varying highp vec2 vTextureCoord;
@@ -64,6 +69,7 @@ const WebGLCanvasContainer: FunctionComponent = () => {
       gl_FragColor = texture2D(uSampler, vTextureCoord);
     }
   `
+  */
 
     const initShaderProgram = (
       gl: WebGL2RenderingContext,
@@ -72,7 +78,6 @@ const WebGLCanvasContainer: FunctionComponent = () => {
     ) => {
       const vertexShader = loadShader(gl, gl.VERTEX_SHADER, vsSource)
       const fragmentShader = loadShader(gl, gl.FRAGMENT_SHADER, fsSource)
-
       const shaderProgram = glCreateProgram(gl)
 
       gl.attachShader(shaderProgram, vertexShader)
@@ -90,7 +95,7 @@ const WebGLCanvasContainer: FunctionComponent = () => {
       return shaderProgram
     }
 
-    const shaderProgram = initShaderProgram(gl, vsSource, fsSource)
+    const shaderProgram = initShaderProgram(gl, vsBlinnPhong, fsBlinnPhong)
 
     const programInfo = {
       program: shaderProgram,
@@ -98,6 +103,7 @@ const WebGLCanvasContainer: FunctionComponent = () => {
         vertexPosition: gl.getAttribLocation(shaderProgram, "aVertexPosition"),
         vertexColor: gl.getAttribLocation(shaderProgram, "aVertexColor"),
         textureCoord: gl.getAttribLocation(shaderProgram, "aTextureCoord"),
+        vertexNormal: gl.getAttribLocation(shaderProgram, "aVertexNormal"),
       },
       uniformLocations: {
         projectionMatrix: gl.getUniformLocation(
@@ -108,6 +114,7 @@ const WebGLCanvasContainer: FunctionComponent = () => {
           shaderProgram,
           "uModelViewMatrix"
         ),
+        normalMatrix: gl.getUniformLocation(shaderProgram, "uNormalMatrix"),
         uSampler: gl.getUniformLocation(shaderProgram, "uSampler"),
       },
     }
@@ -150,6 +157,10 @@ const WebGLCanvasContainer: FunctionComponent = () => {
         0,
         0,
       ])
+
+      const normalMatrix = mat4.create()
+      mat4.invert(normalMatrix, modelViewMatrix)
+      mat4.transpose(normalMatrix, normalMatrix)
 
       const sceneObjectPositionBuffer = glCreateBuffer(gl)
       gl.bindBuffer(gl.ARRAY_BUFFER, sceneObjectPositionBuffer)
@@ -218,6 +229,23 @@ const WebGLCanvasContainer: FunctionComponent = () => {
         gl.STATIC_DRAW
       )
 
+      const sceneObjectNormalBuffer = glCreateBuffer(gl)
+      gl.bindBuffer(gl.ARRAY_BUFFER, sceneObjectNormalBuffer)
+      gl.bufferData(
+        gl.ARRAY_BUFFER,
+        new Float32Array(cubeVertexNormals),
+        gl.STATIC_DRAW
+      )
+      gl.vertexAttribPointer(
+        info.attribLocations.vertexNormal,
+        3,
+        gl.FLOAT,
+        false,
+        0,
+        0
+      )
+      gl.enableVertexAttribArray(info.attribLocations.vertexNormal)
+
       gl.useProgram(info.program)
 
       gl.uniformMatrix4fv(
@@ -229,6 +257,11 @@ const WebGLCanvasContainer: FunctionComponent = () => {
         info.uniformLocations.modelViewMatrix,
         false,
         modelViewMatrix
+      )
+      gl.uniformMatrix4fv(
+        info.uniformLocations.normalMatrix,
+        false,
+        normalMatrix
       )
 
       gl.activeTexture(gl.TEXTURE0)
