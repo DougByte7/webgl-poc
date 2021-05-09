@@ -56,9 +56,9 @@ const WebGLCanvasContainer: FunctionComponent<WebGLCanvasContainerProps> = (
     if (!gl) return
 
     const defaultClearColor: [number, number, number, number] = [
-      0.8,
-      0.8,
-      0.8,
+      0.26,
+      0.26,
+      0.29,
       1.0,
     ]
     gl.clearColor(...defaultClearColor)
