@@ -1,16 +1,31 @@
 .button {
   cursor: pointer;
   height: 2.5rem;
-  background: darken($color: cornflowerblue, $amount: 10);
+
   border: 1px solid aliceblue;
   border-radius: 25px;
   padding: 0 1rem;
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
   font-weight: bold;
   color: aliceblue;
   transition: color 150ms;
 
-  &:hover,
-  &:focus {
-    background: darken($color: cornflowerblue, $amount: 15);
+  &.default {
+    background: darken($color: cornflowerblue, $amount: 10);
+
+    &:hover,
+    &:focus {
+      background: darken($color: cornflowerblue, $amount: 15);
+    }
+  }
+
+  &.error {
+    background: tomato;
+
+    &:hover,
+    &:focus {
+      background: darken($color: tomato, $amount: 10);
+    }
   }
 }
