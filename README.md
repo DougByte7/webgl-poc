@@ -8,8 +8,7 @@ It was bootstrapped with [Create React App](https://github.com/facebook/create-r
 
 - [x] Error Boundary
 - [x] WebGL2 Context renderer
-- [ ] Wavefront (.obj) reader
-- [ ] Play/Pause animation
+- [x] Play/Pause animation
 - [ ] Position and Rotation handles
 
 ## To start the project

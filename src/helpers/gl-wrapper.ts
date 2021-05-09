@@ -1,3 +1,15 @@
+export function getWebGL2RenderingContext(
+  canvas: HTMLCanvasElement
+): WebGL2RenderingContext {
+  const renderingContext = canvas.getContext("webgl2")
+  if (!renderingContext) {
+    throw new Error(
+      "Unable to initialize WebGL. Your browser or machine may not support it."
+    )
+  }
+
+  return renderingContext
+}
 export function glCreateBuffer(gl: WebGL2RenderingContext): WebGLBuffer {
   const webGLBuffer = gl.createBuffer()
   if (!webGLBuffer) {
@@ -98,4 +110,28 @@ export const loadTexture = (
   image.src = url
 
   return texture
+}
+
+export const initShaderProgram = (
+  gl: WebGL2RenderingContext,
+  vsSource: string,
+  fsSource: string
+): WebGLProgram => {
+  const vertexShader = loadShader(gl, gl.VERTEX_SHADER, vsSource)
+  const fragmentShader = loadShader(gl, gl.FRAGMENT_SHADER, fsSource)
+  const shaderProgram = glCreateProgram(gl)
+
+  gl.attachShader(shaderProgram, vertexShader)
+  gl.attachShader(shaderProgram, fragmentShader)
+  gl.linkProgram(shaderProgram)
+
+  if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+    throw new Error(
+      `Unable to initialize the shader program: ${gl.getProgramInfoLog(
+        shaderProgram
+      )}`
+    )
+  }
+
+  return shaderProgram
 }

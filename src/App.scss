@@ -1,4 +1,14 @@
 .App {
   background: rgb(26, 26, 29);
   height: 100vh;
+
+  .menu {
+    list-style: none;
+    position: absolute;
+    bottom: 1rem;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0 1rem;
+    width: 100%;
+  }
 }
