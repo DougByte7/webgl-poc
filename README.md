@@ -1,15 +1,18 @@
 # About
 
-This project is a proof of concept that a I create as I learn WebGL, mostly following the [MDN WebGL Tutorial](https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial/Getting_started_with_WebGL).
-
+This project is a proof of concept that a I create as I learn WebGL.
 It was bootstrapped with [Create React App](https://github.com/facebook/create-react-app) and TypeScript.
+
+It should be just a spinning triangle, but when I got that I thought "what if I add some light texture and transform handles?" so, this project has the following
 
 ## Features
 
 - [x] Error Boundary
 - [x] WebGL2 Context renderer
-- [x] Play/Pause animation
-- [ ] Position and Rotation handles
+- [x] Weird textured spinning cube
+- [x] [Blinn-Phong shading](https://en.wikipedia.org/wiki/Blinn%E2%80%93Phong_reflection_model)
+- [x] Play/Pause "animation"
+- [ ] Transform handles
 
 ## To start the project
 
@@ -24,3 +27,9 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
 The page will reload if you make edits.\
 You will also see any lint errors in the console.
+
+## Future work
+* Other illumination types
+* Wavefront .obj reader
+* Shadow
+* FXAA
