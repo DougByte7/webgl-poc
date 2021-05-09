@@ -1,17 +1,16 @@
 .button {
-    cursor: pointer;
-    height: 2.5rem;
-    background: cornflowerblue;
-    border: 1px solid aliceblue;
-    border-radius: 25px;
-    padding: 0 1rem;
-    font-weight: bold;
-    color: rgb(26, 26, 29);
-    transition: color 150ms;
+  cursor: pointer;
+  height: 2.5rem;
+  background: darken($color: cornflowerblue, $amount: 10);
+  border: 1px solid aliceblue;
+  border-radius: 25px;
+  padding: 0 1rem;
+  font-weight: bold;
+  color: aliceblue;
+  transition: color 150ms;
 
-    &:hover,
-    &:focus {
-      color: black;
-      background: darken($color: cornflowerblue, $amount: 10);
-    }
+  &:hover,
+  &:focus {
+    background: darken($color: cornflowerblue, $amount: 15);
   }
+}
