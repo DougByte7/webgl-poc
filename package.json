@@ -1,6 +1,6 @@
 {
   "name": "webgl-poc",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "homepage": "https://dougbyte7.github.io/webgl-poc/",
   "private": true,
   "dependencies": {
