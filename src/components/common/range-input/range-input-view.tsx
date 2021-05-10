@@ -8,7 +8,7 @@ interface RangeInputProps {
   value: number
   min: number
   max: number
-  step: number
+  step?: number
   disabled?: boolean
   className?: string
   onChange: React.ChangeEventHandler<HTMLInputElement>

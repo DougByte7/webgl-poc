@@ -12,7 +12,7 @@ It should be just a spinning triangle, but when I got that I thought "what if I 
 - [x] Weird textured spinning cube
 - [x] [Blinn-Phong shading](https://en.wikipedia.org/wiki/Blinn%E2%80%93Phong_reflection_model)
 - [x] Play/Pause "animation"
-- [ ] Transform handles
+- [x] Transform handles
 
 ## To start the project
 

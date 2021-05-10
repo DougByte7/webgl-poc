@@ -7,7 +7,6 @@ import {
   loadTexture,
 } from "@/helpers/gl-wrapper"
 import {
-  //cubeFaceColors,
   cubeIndices,
   cubePositions,
   cubeTextureCoordinates,
@@ -20,12 +19,16 @@ const fsBlinnPhong = require("@/shaders/blinn-phong.frag").default
 
 interface WebGLCanvasContainerProps {
   isPlaying: boolean
+  scale: number
+  rotationX: number
+  rotationY: number
+  rotationZ: number
 }
 
 const WebGLCanvasContainer: FunctionComponent<WebGLCanvasContainerProps> = (
   props
 ) => {
-  const { isPlaying } = props
+  const { isPlaying, scale, rotationX, rotationY, rotationZ } = props
   const canvas = useRef<HTMLCanvasElement>(null)
   const [gl, setGL] = useState<WebGL2RenderingContext>()
   const cubeRotation = useRef(0.0)
@@ -39,6 +42,7 @@ const WebGLCanvasContainer: FunctionComponent<WebGLCanvasContainerProps> = (
   const sceneObjectTextureCoordBuffer = useRef<WebGLBuffer>()
   const sceneObjectIndicesBuffer = useRef<WebGLBuffer>()
   const sceneObjectNormalBuffer = useRef<WebGLBuffer>()
+  const modelViewMatrix = useRef<mat4>()
 
   const setRenderingContext = () => {
     if (!canvas.current) return
@@ -129,28 +133,39 @@ const WebGLCanvasContainer: FunctionComponent<WebGLCanvasContainerProps> = (
 
       mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar)
 
-      const modelViewMatrix = mat4.create()
-      mat4.translate(modelViewMatrix, modelViewMatrix, [0.0, 0.0, -6.0])
-      mat4.rotate(modelViewMatrix, modelViewMatrix, cubeRotation.current, [
-        0,
-        0,
-        1,
+      modelViewMatrix.current = mat4.create()
+      mat4.translate(modelViewMatrix.current, modelViewMatrix.current, [
+        0.0,
+        0.0,
+        -6.0,
       ])
+      mat4.scale(modelViewMatrix.current, modelViewMatrix.current, [
+        scale,
+        scale,
+        scale,
+      ])
+
       mat4.rotate(
-        modelViewMatrix,
-        modelViewMatrix,
-        cubeRotation.current * 0.2,
+        modelViewMatrix.current,
+        modelViewMatrix.current,
+        isPlaying ? cubeRotation.current * 0.5 : rotationX,
+        [1, 0, 0]
+      )
+      mat4.rotate(
+        modelViewMatrix.current,
+        modelViewMatrix.current,
+        isPlaying ? cubeRotation.current * 0.2 : rotationY,
         [0, 1, 0]
       )
       mat4.rotate(
-        modelViewMatrix,
-        modelViewMatrix,
-        cubeRotation.current * 0.5,
-        [1, 0, 0]
+        modelViewMatrix.current,
+        modelViewMatrix.current,
+        isPlaying ? cubeRotation.current : rotationZ,
+        [0, 0, 1]
       )
 
       const normalMatrix = mat4.create()
-      mat4.invert(normalMatrix, modelViewMatrix)
+      mat4.invert(normalMatrix, modelViewMatrix.current)
       mat4.transpose(normalMatrix, normalMatrix)
 
       if (!sceneObjectPositionBuffer.current) {
@@ -229,7 +244,7 @@ const WebGLCanvasContainer: FunctionComponent<WebGLCanvasContainerProps> = (
       gl.uniformMatrix4fv(
         info.uniformLocations.modelViewMatrix,
         false,
-        modelViewMatrix
+        modelViewMatrix.current
       )
       gl.uniformMatrix4fv(
         info.uniformLocations.normalMatrix,
@@ -261,7 +276,7 @@ const WebGLCanvasContainer: FunctionComponent<WebGLCanvasContainerProps> = (
     return () => {
       cancelAnimationFrame(requestRef.current!)
     }
-  }, [gl, isPlaying])
+  }, [gl, isPlaying, scale, rotationX, rotationY, rotationZ])
 
   return (
     <canvas ref={canvas} id="glCanvas" width={width} height={height}></canvas>
